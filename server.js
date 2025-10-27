@@ -2,6 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const prisma = require('./lib/prisma');
 
+// Import routes
+const productRoutes = require('./routes/products');
+const userRoutes = require('./routes/users');
+const orderRoutes = require('./routes/orders');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -37,6 +42,11 @@ app.get('/api/db-test', async (req, res) => {
     });
   }
 });
+
+// API Routes
+app.use('/api/products', productRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/orders', orderRoutes);
 
 // Start the server
 app.listen(PORT, async () => {
