@@ -156,10 +156,37 @@ const deleteOrder = async (req, res) => {
   }
 };
 
+// Update only the price of an order
+const updateOrderPrice = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { price } = req.body;
+
+    if (price === undefined || price === null) {
+      return res.status(400).json({ error: 'Price is required' });
+    }
+
+    if (typeof price !== 'number' || price < 0) {
+      return res.status(400).json({ error: 'Price must be a positive number' });
+    }
+
+    const order = await prisma.order.update({
+      where: { id },
+      data: { price }
+    });
+
+    res.json(order);
+  } catch (error) {
+    console.error('Error updating order price:', error);
+    res.status(500).json({ error: 'Failed to update order price' });
+  }
+};
+
 module.exports = {
   createOrder,
   getOrders,
   getOrderById,
   updateOrder,
-  deleteOrder
+  deleteOrder,
+  updateOrderPrice
 };

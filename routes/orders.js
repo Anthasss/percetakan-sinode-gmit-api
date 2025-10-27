@@ -5,7 +5,8 @@ const {
   getOrders,
   getOrderById,
   updateOrder,
-  deleteOrder
+  deleteOrder,
+  updateOrderPrice
 } = require('../controllers/orderController');
 
 // Create a new order
@@ -16,6 +17,9 @@ router.get('/', getOrders);
 
 // Get order by ID
 router.get('/:id', getOrderById);
+
+// Update order price only
+router.patch('/:id/price', updateOrderPrice);
 
 // Update order
 router.patch('/:id', updateOrder);
