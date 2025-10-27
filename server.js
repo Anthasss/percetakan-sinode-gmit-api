@@ -1,12 +1,13 @@
 const express = require('express');
 const cors = require('cors');
+const prisma = require('./lib/prisma');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Configure CORS to allow requests from localhost:5173
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: ['http://localhost:5173', 'https://percetakan-sinode-gmit.vercel.app'], 
   credentials: true
 }));
 
@@ -24,7 +25,39 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'CORS is configured for localhost:5173' });
 });
 
+// Test database connection
+app.get('/api/db-test', async (req, res) => {
+  try {
+    await prisma.$connect();
+    res.json({ message: 'Database connected successfully!' });
+  } catch (error) {
+    res.status(500).json({ 
+      message: 'Database connection failed', 
+      error: error.message 
+    });
+  }
+});
+
 // Start the server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server is running on http://localhost:${PORT}`);
+  
+  // Test database connection on startup
+  try {
+    await prisma.$connect();
+    console.log('✅ Database connected successfully!');
+  } catch (error) {
+    console.error('❌ Database connection failed:', error.message);
+  }
+});
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  await prisma.$disconnect();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  await prisma.$disconnect();
+  process.exit(0);
 });
