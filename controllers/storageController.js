@@ -1,5 +1,10 @@
-const { S3Client, ListObjectsV2Command, GetObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, ListObjectsV2Command, GetObjectCommand, PutObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
+const multer = require('multer');
+
+// Configure multer for memory storage
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 // Configure S3 client for Domainesia Object Storage
 const s3Client = new S3Client({
@@ -122,7 +127,65 @@ const getImagesByPrefix = async (req, res) => {
   }
 };
 
+/**
+ * Upload an image to object storage
+ * Body params:
+ * - file: the image file (multipart/form-data)
+ * - fileName: custom name for the file in storage (required)
+ */
+const uploadImage = async (req, res) => {
+  try {
+    const { fileName } = req.body;
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No file provided',
+      });
+    }
+
+    if (!fileName) {
+      return res.status(400).json({
+        success: false,
+        message: 'fileName is required',
+      });
+    }
+
+    const command = new PutObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: fileName,
+      Body: req.file.buffer,
+      ContentType: req.file.mimetype,
+    });
+
+    await s3Client.send(command);
+
+    // Construct public URL
+    const publicUrl = `${process.env.S3_ENDPOINT}/${BUCKET_NAME}/${fileName}`;
+
+    res.json({
+      success: true,
+      message: 'Image uploaded successfully',
+      data: {
+        key: fileName,
+        url: publicUrl,
+        size: req.file.size,
+        contentType: req.file.mimetype,
+      },
+    });
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to upload image',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getAllImages,
   getImagesByPrefix,
+  uploadImage,
+  upload, // Export multer middleware
 };
