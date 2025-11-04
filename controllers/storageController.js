@@ -1,4 +1,4 @@
-const { S3Client, ListObjectsV2Command, GetObjectCommand, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, ListObjectsV2Command, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const multer = require('multer');
 
@@ -183,9 +183,50 @@ const uploadImage = async (req, res) => {
   }
 };
 
+/**
+ * Delete an image from object storage
+ * URL params:
+ * - fileName: the key/name of the file to delete (required)
+ */
+const deleteImage = async (req, res) => {
+  try {
+    const { fileName } = req.params;
+
+    if (!fileName) {
+      return res.status(400).json({
+        success: false,
+        message: 'fileName parameter is required',
+      });
+    }
+
+    const command = new DeleteObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: fileName,
+    });
+
+    await s3Client.send(command);
+
+    res.json({
+      success: true,
+      message: 'Image deleted successfully',
+      data: {
+        key: fileName,
+      },
+    });
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete image',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getAllImages,
   getImagesByPrefix,
   uploadImage,
+  deleteImage,
   upload, // Export multer middleware
 };

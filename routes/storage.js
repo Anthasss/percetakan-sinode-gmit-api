@@ -4,6 +4,7 @@ const {
   getAllImages,
   getImagesByPrefix,
   uploadImage,
+  deleteImage,
   upload,
 } = require('../controllers/storageController');
 
@@ -19,5 +20,9 @@ router.get('/images/:prefix', getImagesByPrefix);
 // Upload an image
 // Body: multipart/form-data with 'file' and 'fileName' fields
 router.post('/images', upload.single('file'), uploadImage);
+
+// Delete an image
+// URL params: fileName (required) - the key/name of the file to delete
+router.delete('/images/:fileName(*)', deleteImage);
 
 module.exports = router;
