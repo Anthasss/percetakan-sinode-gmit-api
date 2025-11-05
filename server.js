@@ -6,7 +6,7 @@ const prisma = require('./lib/prisma');
 const productRoutes = require('./routes/products');
 const userRoutes = require('./routes/users');
 const orderRoutes = require('./routes/orders');
-const storageRoutes = require('./routes/storage');
+const homeBannerRoutes = require('./routes/homeBanners');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -48,7 +48,7 @@ app.get('/api/db-test', async (req, res) => {
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
-app.use('/api/storage', storageRoutes);
+app.use('/api/home-banners', homeBannerRoutes);
 
 // Start the server
 app.listen(PORT, async () => {
